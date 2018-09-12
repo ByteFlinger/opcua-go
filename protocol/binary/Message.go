@@ -52,33 +52,16 @@ func (m *HelloMessage) marshal() ([]byte, error) {
 		return []byte{}, errors.New("EndpointURL length cannot be greater than 4096 bytes")
 	}
 
-	var err error
+	buf := make([]byte, 24+len(m.EndpointURL))
 
-	buf := Buffer{}
+	PutUint32(buf[0:4], m.ProtocolVersion)
+	PutUint32(buf[4:8], m.ReceiveBufferSize)
+	PutUint32(buf[8:12], m.SendBufferSize)
+	PutUint32(buf[12:16], m.MaxMessageSize)
+	PutUint32(buf[16:20], m.MaxChunkCount)
+	PutString(buf[20:], m.EndpointURL)
 
-	err = buf.WriteUint32(m.ProtocolVersion)
-
-	if err == nil {
-		err = buf.WriteUint32(m.ReceiveBufferSize)
-	}
-
-	if err == nil {
-		err = buf.WriteUint32(m.SendBufferSize)
-	}
-
-	if err == nil {
-		err = buf.WriteUint32(m.MaxMessageSize)
-	}
-
-	if err == nil {
-		err = buf.WriteUint32(m.MaxChunkCount)
-	}
-
-	if err == nil {
-		err = buf.WriteString(m.EndpointURL)
-	}
-
-	return buf.Bytes(), err
+	return buf, nil
 }
 
 func (m *HelloMessage) unmarshal(b []byte) error {
@@ -129,29 +112,15 @@ func (m *AckMessage) marshal() ([]byte, error) {
 		return []byte{}, errors.New("ReceiveBufferSize must be at least 8192 bytes")
 	}
 
-	var err error
+	buf := make([]byte, 20)
 
-	buf := Buffer{}
+	PutUint32(buf[0:4], m.ProtocolVersion)
+	PutUint32(buf[4:8], m.ReceiveBufferSize)
+	PutUint32(buf[8:12], m.SendBufferSize)
+	PutUint32(buf[12:16], m.MaxMessageSize)
+	PutUint32(buf[16:20], m.MaxChunkCount)
 
-	err = buf.WriteUint32(m.ProtocolVersion)
-
-	if err == nil {
-		err = buf.WriteUint32(m.ReceiveBufferSize)
-	}
-
-	if err == nil {
-		err = buf.WriteUint32(m.SendBufferSize)
-	}
-
-	if err == nil {
-		err = buf.WriteUint32(m.MaxMessageSize)
-	}
-
-	if err == nil {
-		err = buf.WriteUint32(m.MaxChunkCount)
-	}
-
-	return buf.Bytes(), err
+	return buf, nil
 }
 
 func (m *AckMessage) unmarshal(b []byte) error {
@@ -188,16 +157,12 @@ type ErrorMessage struct {
 
 func (m *ErrorMessage) marshal() ([]byte, error) {
 
-	var err error
-	buf := Buffer{}
+	buf := make([]byte, 8+len(m.Reason))
 
-	err = buf.WriteUint32(m.Error)
+	PutUint32(buf[0:4], m.Error)
+	PutString(buf[4:], m.Reason)
 
-	if err == nil {
-		err = buf.WriteString(m.Reason)
-	}
-
-	return buf.Bytes(), err
+	return buf, nil
 }
 
 func (m *ErrorMessage) unmarshal(b []byte) error {
